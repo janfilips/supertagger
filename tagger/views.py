@@ -32,7 +32,7 @@ def supertags(request):
 	supertags = tagger(data)
 	seconds = time.time()-x
 		
-	output = ""
+	output = "Tags: "
 	
 	for tag in supertags:		
 		output += '<b>' + tag.string.upper() + '</b> '
