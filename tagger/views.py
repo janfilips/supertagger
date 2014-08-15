@@ -16,6 +16,34 @@ from django.shortcuts import redirect, render
 
 logger = logging.getLogger(__name__)
 
-def tagger(request):
+from stemmer import Tagger, Reader, Stemmer, Rater
+
+weights = pickle.load(open('data/dict.pkl', 'rb'))
+tagger = Tagger(Reader(), Stemmer(), Rater(weights))
+
+def supertags(request):
+
+	print 'supertags'
+	print request.POST
 	
+	data = request.POST['data']
+		
+	import time; x = time.time()
+	supertags = tagger(data)
+	seconds = time.time()-x
+		
+	output = ""
+	
+	for tag in supertags:		
+		output += '<b>' + tag.string.upper() + '</b> '
+	
+	output += '<br/>'
+	output += 'Roundtrip time: <b>' + str(seconds) + 's</b><br/><br/>'
+
+	return HttpResponse(output)
+
+
+def home(request):
+
+	print 'home'
 	return render_to_response('tagger.html', {}, context_instance=RequestContext(request))

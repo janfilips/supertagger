@@ -2,8 +2,8 @@ from django.conf.urls import patterns, include, url
 from django.conf import settings
 
 urlpatterns = patterns('',
-	# common views
-	url(r'^$', 'tagger.views.tagger', name='tagger'),
+	url(r'^$', 'tagger.views.home', name='home'),
+	url(r'^supertags/$', 'tagger.views.supertags', name='supertags'),
 )
 
 urlpatterns += patterns('',

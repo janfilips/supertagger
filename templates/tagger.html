@@ -1,1 +1,217 @@
-hello world
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html> 
+	<head> 
+		<title>SuperTags&trade; workshop</title> 
+ 
+ 
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script> 
+
+				<style type="text/css"> 
+				.demo {
+				    margin: 30px;
+				    position: relative;
+				}
+				#txt_input {
+				    border: 1px solid #CCCCCC;
+					-webkit-border-radius: 8px; 
+					-moz-border-radius: 8px;
+					border-radius: 8px;
+				    color: #555;
+				    font-size: 17px;
+				    height: 100px;
+				    padding: 4px;
+				    margin:4px 0 20px 0;
+				    vertical-align: top;
+				    width: 600px;
+				    font:1.2em Arial,Helvetica,sans-serif;
+				}
+				#returned_tags {
+					clear:both;
+				}
+				.supertagger {
+					display: inline-block;
+					height:14px;
+					cursor:pointer;
+					font-size:16px;
+					padding: 2px 9px 8px 4px;
+					margin:10px 5px 0 0;
+					color:#444444;
+					border:1px solid #cccccc;
+					-webkit-border-radius: 5px; 
+					-moz-border-radius: 5px;
+					border-radius: 5px;
+					background-color: #FFFFA5; /* yellow edit mode */
+				}
+				.supertagger:hover {text-decoration: none;}
+				.supertagger .delete_tag {
+					background-image: url(/static/sprites.png);
+					background-repeat: no-repeat;
+					background-position: -313px -24px;
+					width:14px;
+					height:14px;
+					margin:3px 2px 0 2px;
+					display: inline-block;
+				}
+				#roundtrip_time {
+					display:block;
+				}
+
+				</style>		
+			</head> 
+			<body> 
+
+
+
+		<script type="text/javascript"> 
+
+			$(document).ready(function(){ parickaSuperTags('#txt_input', '#returned_tags'); });
+
+
+			function parickaSuperTags(input_element, output_element) {
+
+				var xhr = null; // XMLHttpRequest
+
+				$(input_element).each(function(){
+					var initialString = $(this).val();
+
+					// bind keyup event - catches keyup but not 'press and hold events'
+					$(this).keyup(function(e){
+						//log( "keyup... ");
+
+						// check for space, or enter key, and send query after each
+						if(e.keyCode == 32 || e.keyCode == 13 ) {
+							log("Preparing new query...");
+							var currentString = $(this).val();
+
+							// display loader
+							$('#input_loader').show();
+
+							// cancel any previous request
+							if (xhr && xhr.readystate != 4) {
+								log('...aborting previous lookup');
+								xhr.abort();
+								$('#input_loader').hide();
+							}
+
+							var params = {}; 
+							params["data"] = currentString; params["csrf_token"] = "{{csrf_token}}";
+
+							xhr = $.ajax({
+							    type: "POST",
+							    url: "/supertags/",
+							    data: params,
+							    dataType: 'text',
+								cache: false,
+								async: true,
+								headers: {"X-CSRFToken":"{{csrf_token}}"},
+
+								success: function(result, textStatus, XMLHttpRequest) {
+								    log('Query success!');
+									log('textStatus: ' + textStatus + ",\nXHR.readyState: " + XMLHttpRequest.readyState + ",\nXHT.status: " + XMLHttpRequest.status);
+
+									$(output_element).html(result);
+
+									xhr = null;
+							    },
+
+							    complete: function(data) {
+								    log('Query complete');												    
+								    $('#input_loader').hide();
+
+								    // example tag
+								    //$(output_element).html("<a class='tag' href='#'><span class='delete_tag' title='Remove tag'></span>example tag</a>");
+
+							    },
+
+							    error: function(XMLHttpRequest, textStatus, errorThrown) {
+									{% comment %}
+							        log('textStatus: ' + textStatus + ",\nXHR.readyState: " + XMLHttpRequest.readyState + ",\nXHT.status: " + XMLHttpRequest.status);
+								    $('#debug').html('errorThrown: ' + errorThrown + 'textStatus: ' + textStatus + "<br />XHR.readyState: " + XMLHttpRequest.readyState + "<br />XHT.status: " + XMLHttpRequest.status);
+									{% endcomment %}
+
+							    }
+
+							});
+
+
+
+
+						} // end spacebar or enter key 
+					}); // end keyup
+
+					// to catch 'press and hold events' like delete key
+					$(this).keypress(function(){ // firefox uses this
+						//log( "keypress... ");
+					});
+
+					$(this).keydown(function(){ // safari uses this
+						//log( "keydown... ");
+					});
+
+				});
+			}
+		</script> 
+
+
+		<script type="text/javascript"> 
+		window.log=function(){log.history=log.history||[];log.history.push(arguments);if(this.console){console.log(Array.prototype.slice.call(arguments))}};
+		// make it safe to use console.log always
+		(function(b){function c(){}for(var d="assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(","),a;a=d.pop();)b[a]=b[a]||c})(window.console=window.console||{});
+
+		</script> 
+
+		<div class="demo"> 
+
+			<h1>SuperTagger&trade;</h1>
+			<br/>
+			Keywords: python, information retrieval, language processing, morphological analysis, stemming algorithms, stemmers<br/><br/>
+			
+			
+			<strong>SuperTagger</strong><br/>
+			<br/>
+			SuperTagger provides access to efficient algorithm for calculating a "stemmed" form of a word. This is a form with most of the common morphological endings removed; hopefully representing a common linguistic base form.<br/>
+			<br/>
+			SuperTagger provides algorithms for several (mainly european) languages, by wrapping the libstemmer library from the Snowball project and utilizing Python Stemmer module.<br/>
+			<br/>			
+						
+			<b>Step 1)</b> start typing in some English text below, and the supertags will appear.
+			<br/>
+			<br/>
+			
+			<textarea id="txt_input" onblur="if (this.value=='') { this.value='Type your text here...' }" onfocus="if (this.value=='Type your text here...') { this.value='' };"></textarea> 
+			<div id="input_loader" class="hidden"></div> 
+			<br /> 
+			<p id="debug"></p> 
+
+			<div id="returned_tags"> 
+			</div> 
+			
+			SuperTagger is written in Python, and primarily utilizes standard python stemming library <a href="http://pypi.python.org/pypi/PyStemmer/1.0.1">http://pypi.python.org/pypi/PyStemmer/1.0.1</a>, applying the <a href="http://snowball.tartarus.org/demo.php">Snowball</a> stemming algorithm <a href="http://snowball.tartarus.org/">http://snowball.tartarus.org/</a>
+			thus making SuperTagger capable of working with several languages:
+		
+			<a href="#">Danish</a>,
+			<a href="#">Dutch</a>,
+			<a href="#">English</a>,
+			<a href="#">Finnish</a>,
+			<a href="#">French</a>,
+			<a href="#">German</a>,
+			<a href="#">Italian</a>,
+			<a href="#">Norwegian</a>,
+			<a href="#">Portuguese</a>,
+			<a href="#">Russian</a>,
+			<a href="#">Spanish</a>,
+			and <a href="#">Swedish</a>.
+
+
+			<br/>
+			<br/>
+			
+			Happy SuperTagging!  :)</br>
+
+			<br/>
+			&copy;Jan Paricka 2014
+
+		</div> 
+
+		</body> 
+		</html>
